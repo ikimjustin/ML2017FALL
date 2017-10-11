@@ -15,44 +15,116 @@ import math
 row=()
 xdata=[]
 ydata=[]
+ydata2=[]
+CO=[]
+AMB_TEMP=[]
+CH4=[]
+NMHC=[]
+NO=[]
+NO2=[]
+NOx=[]
+O3=[]
+PM10=[]
+RAINFALL=[]
+RH=[] 
+SO2=[] 
+THC=[] 
+WD_HR=[] 
+WIND_DIREC=[] 
+WIND_SPEED=[] 
+WS_HR=[]
+
 
 #read pm2.5 in line,ydata
 line_number = 0
 for line in csv.reader(open("train.csv",'r')):
+	if (line_number-1)%18 == 0:
+		del line[0:3]
+		AMB_TEMP = AMB_TEMP +line
+	if (line_number-1)%18 == 1:
+		del line[0:3]
+		CH4 = CH4 +line
+	if (line_number-1)%18 == 2:
+		del line[0:3]
+		CO = CO +line
+	if (line_number-1)%18 == 3:
+		del line[0:3]
+		NMHC = NMHC +line
+	if (line_number-1)%18 == 4:
+		del line[0:3]
+		NO = NO +line
+	if (line_number-1)%18 == 5:
+		del line[0:3]
+		NO2 = NO2 +line
+	if (line_number-1)%18 == 6:
+		del line[0:3]
+		NOx = NOx +line
+	if (line_number-1)%18 == 7:
+		del line[0:3]
+		O3 = O3 +line
+	if (line_number-1)%18 == 8:
+		del line[0:3]
+		PM10 = PM10 +line
 	if (line_number-1)%18 == 9:
 		del line[0:3]
-		ydata = ydata +line 
+		ydata = ydata +line
+		ydata2= ydata2 +line
+	if (line_number-1)%18 == 10:
+		del line[0:3]
+		RAINFALL = RAINFALL +line
+	if (line_number-1)%18 == 11:
+		del line[0:3]
+		RH= RH +line
+	if (line_number-1)%18 == 12:
+		del line[0:3]
+		SO2 = SO2 +line
+	if (line_number-1)%18 == 13:
+		del line[0:3]
+		THC = THC +line
+	if (line_number-1)%18 == 14:
+		del line[0:3]
+		WD_HR = WD_HR +line
+	if (line_number-1)%18 == 15:
+		del line[0:3]
+		WIND_DIREC = WIND_DIREC +line
+	if (line_number-1)%18 == 16:
+		del line[0:3]
+		WIND_SPEED = WIND_SPEED +line
+	if (line_number-1)%18 == 17:
+		del line[0:3]
+		WS_HR = WS_HR+line
 	line_number +=1
 
-'''
-for i in range (3,27):
-	row = pd.read_csv("train.csv",sep=',',usecols=[i]).values.tolist()  ##"need .values.tolist" in order to transfer dataframe to list datatype ,so u can op in list
-	print (row)
-	#print (pd.read_csv("train.csv",sep=',',usecols=[i]))
-		#for j in range(0,len(row[0])):
-	#print (row)	
-	for j in range(0,len(row),18):
-		#temp = row[j:j+9]+row[j+10:j+18]   #other data
-		#temp = np.asarray(temp)
-		#temp = temp.astype(np.float)
-		#xdata.append(temp)
-		temp2 = row[j+9]   #pm2.5
-		temp2 = np.asarray(temp2)
-		temp2 = temp2.astype(np.float)
-		temp2 = temp2.tolist()
-		ydata = ydata + temp2
-'''
+ydata2= np.asarray(ydata2)
+ydata2 = ydata2.astype(np.float)
+def square(list):
+	ret=[]
+	for i in list:
+		ret.append(i*i)
+	return ret
+
+
+ysqr=square(ydata2)
+
+
+#print(ysqr)
 
 
 x_item =[]  #first 5 hr pm2.5
 y_item =[]	#6th hr pm2.5
-
-feature_number = 9	
+co_item=[]  #CO
+feature_number = 9  #how many hour picked up
+hi=2	#want how many features
 for j in range(0, len(ydata) - feature_number):
 	if (j%480)>=0 and (j%480)<=(479-feature_number):  #bcuz source data only contains first 20days of one month,must seperate 20th day and first day of next month
-		x_item.append(ydata[j : j + feature_number])
-		#x_item.append([1])
+		x_item.append(ydata[j : j + feature_number]+ysqr[j : j + feature_number]+[1])
+		#x_item.append(['1'])
+		#+NO2[j : j + feature_number]+NOx[j : j + feature_number]+SO2[j : j + feature_number]+PM10[j : j + feature_number]
 		y_item.append(ydata[j + feature_number])
+##add
+##+CO[j : j + feature_number]
+
+		
 x_item = np.asarray(x_item)
 x_item = x_item.astype(np.float)
 y_item = np.asarray(y_item)
@@ -62,83 +134,46 @@ y_item = y_item.astype(np.float)
 #print(len(x_item))
 #print(len(ydata))
 
-'''
-#df.5 = df.5.astype(float).fillna(0.0)
-def countdiff(base,weight,train):
-    group_number=len(train[0])
-    #data=[(i[0],i[1],i[2])for i in train]
-    group=0
-    diff_w=numpy.zeros((5),float)
-    diff_b=0
-    while group<group_number-3:
-        data=[[i[group],i[group+1],i[group+2]] for i in train ]
-        temp=data*weight
-        temp1=[[sum(i)]for i in temp]
-        temp2=sum(map(sum,temp1))
-        temp3=train[9][group+3]-temp2-base
-        #data=numpy.asarray(data).reshape(54)
-        diff_w=diff_w+2*temp3*data*(-1)
-        diff_b=diff_b+temp3
-        if group%24==20:
-            group+=4
-        else:
-            group+=1
-    return [diff_b,diff_w]
-'''
+
+
 
     # start training w
 
-time = 10000
-l_rate = 0.8
-w = [1] * (feature_number )	
+time = 15000
+l_rate = 15
+w = [1] * ((hi*feature_number)+1)	
 data = len(y_item)
-'''
+
 for i in range(0,time):
 	total = [0] * (feature_number+1)
 	cost= 0
-'''
+
 x_t = x_item.transpose()
 s_gra = np.zeros(len(x_item[0]))
-s_b_gra = 0
-bias = np.ones((len(x_item)))
+#s_b_gra = 0
+#bias=0
+#bias = np.zeros((len(x_item)))
 for i in range(time):
-    hypo = np.dot(x_item,w)+bias
-    loss = hypo - y_item
+    hypo = np.dot(x_item,w)
+    #loss = y_item -hypo
+    loss = (hypo - y_item)
     cost = np.sum(loss**2) / len(x_item)
     cost_a  = math.sqrt(cost)
     gra = np.dot(x_t,loss)
     s_gra += gra**2
     ada = np.sqrt(s_gra)
-    b_gra = np.dot(np.ones((1,(len(x_item)))),loss)
-    s_b_gra += b_gra**2 
-    b_ada = np.sqrt(s_b_gra)
+    #b_gra = loss[feature_number]
+    #b_gra = np.dot(np.ones(((len(x_item)))),loss)
+    #s_b_gra += b_gra**2 
+    #b_ada = np.sqrt(s_b_gra)
     w = w - l_rate * gra/ada
-    bias = bias - b_gra*l_rate/b_ada
+    #bias = bias + l_rate * b_gra/ada[feature_number]
     print ('iteration: %d | Cost: %f  ' % ( i,cost_a))
+    #print(loss)
 
+	
+#print(cost/(2*data))
 
-'''
-	for j in range(0,data):
-		# get wx by using inner product
-		inner_product = 0
-		for k in range(0,(feature_number+1)):
-			inner_product += w[k] * (x_item[j][k])		
-		# get y - wx
-		inner_product -= (y_item[j])		
-		# get total cost
-		cost = cost + inner_product ** 2		
-		# get Σ(y - wx)x 
-		for k in range(0,feature_number):
-			total[k] += learning_rate * inner_product * (x_item[j][k])			
-		# constant
-		total[5] += learning_rate * inner_product			
-	# update w
-	for k in range(0,(feature_number+1)):
-		w[k] = w[k] - total[k] / data	
-	if (i%100) == 1:
-		print (cost)
-'''
-		
-print(cost/(2*data))
-print(w,'%f')
-print(bias)
+for i in range(0,(hi*feature_number+1)):
+	print(w[i],",")   #bias is the last term
+#print(bias,'bias')
