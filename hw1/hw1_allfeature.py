@@ -74,6 +74,9 @@ for line in csv.reader(open("train.csv",'r')):
 	if (line_number-1)%18 == 10:
 		del line[0:3]
 		RAINFALL = RAINFALL +line
+		#if (line=="NR"):
+                        #RAINFALL=RAINFALL+[0]
+		
 	if (line_number-1)%18 == 11:
 		del line[0:3]
 		RH= RH +line
