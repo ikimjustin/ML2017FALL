@@ -8,7 +8,7 @@ import csv
 
 # If you wish to get the same shuffle result
 # np.random.seed(2401)
-
+'''
 def load_data(train_data_path, train_label_path, test_data_path):
     X_train = pd.read_csv(train_data_path, sep=',', header=0)
     X_train = np.array(X_train.values)
@@ -18,6 +18,40 @@ def load_data(train_data_path, train_label_path, test_data_path):
     X_test = np.array(X_test.values)
 
     return (X_train, Y_train, X_test)
+'''
+features = ['age', 'fnlwgt','sex', 'capital_gain', 'capital_loss', ' Federal-gov', ' Local-gov', ' Never-worked', ' Private', ' Self-emp-inc', ' Self-emp-not-inc', ' State-gov', ' Without-pay', '?_workclass', ' 10th', ' 11th', ' 12th', ' 1st-4th', ' 5th-6th', ' 7th-8th', ' 9th', ' Assoc-acdm', ' Assoc-voc', ' Bachelors', ' Doctorate', ' HS-grad', ' Masters', ' Preschool', ' Prof-school', ' Some-college', ' Adm-clerical', ' Armed-Forces', ' Craft-repair', ' Exec-managerial', ' Farming-fishing', ' Handlers-cleaners', ' Machine-op-inspct', ' Other-service', ' Priv-house-serv', ' Prof-specialty', ' Protective-serv', ' Sales', ' Tech-support', ' Transport-moving', '?_occupation', ' Husband', ' Not-in-family', ' Other-relative', ' Own-child', ' Unmarried', ' Wife', ' Amer-Indian-Eskimo', ' Asian-Pac-Islander', ' Black', ' Other', ' White']
+def load_feature(train_data_path, train_label_path, test_data_path):
+    feature = ['age', 'fnlwgt','sex', 'capital_gain', 'capital_loss', ' Federal-gov', ' Local-gov', ' Never-worked', ' Private', ' Self-emp-inc', ' Self-emp-not-inc', ' State-gov', ' Without-pay', '?_workclass', ' 10th', ' 11th', ' 12th', ' 1st-4th', ' 5th-6th', ' 7th-8th', ' 9th', ' Assoc-acdm', ' Assoc-voc', ' Bachelors', ' Doctorate', ' HS-grad', ' Masters', ' Preschool', ' Prof-school', ' Some-college', ' Adm-clerical', ' Armed-Forces', ' Craft-repair', ' Exec-managerial', ' Farming-fishing', ' Handlers-cleaners', ' Machine-op-inspct', ' Other-service', ' Priv-house-serv', ' Prof-specialty', ' Protective-serv', ' Sales', ' Tech-support', ' Transport-moving', '?_occupation', ' Husband', ' Not-in-family', ' Other-relative', ' Own-child', ' Unmarried', ' Wife', ' Amer-Indian-Eskimo', ' Asian-Pac-Islander', ' Black', ' Other', ' White']
+    train_num = len(np.array(pd.read_csv(train_data_path, sep=',',usecols=[feature[0]], header=0).values))
+    test_num = len(np.array(pd.read_csv(test_data_path, sep=',',usecols=[feature[0]], header=0).values))
+    X_train = np.zeros((train_num,len(feature)*2))
+    X_test = np.zeros((test_num,len(feature)*2))
+    for i in range(0, len(feature)):
+        X_train[:,i] = (np.array(pd.read_csv(train_data_path, sep=',',usecols=[feature[i]], header=0).values)).reshape(train_num)
+        #X_train = np.array(X_train.values)
+        X_test[:,i] = (np.array(pd.read_csv(test_data_path, sep=',',usecols=[feature[i]], header=0).values)).reshape(test_num)
+        #X_test = np.array(X_test.values)
+    for i in range(0, len(feature)):
+        X_train[:,len(feature)+i] = (np.array(pd.read_csv(train_data_path, sep=',',usecols=[feature[i]], header=0).values)).reshape(train_num)
+        X_train[:,len(feature)+i] = np.square(X_train[:,len(feature)+i])
+        #X_train = np.array(X_train.values)
+        X_test[:,len(feature)+i] = (np.array(pd.read_csv(test_data_path, sep=',',usecols=[feature[i]], header=0).values)).reshape(test_num)
+        X_test[:,len(feature)+i] = np.square(X_test[:,len(feature)+i])
+        #X_test = np.array(X_test.values)
+        '''
+    for i in range(0, len(feature)):
+        X_train[:,2*len(feature)+i] = (np.array(pd.read_csv(train_data_path, sep=',',usecols=[feature[i]], header=0).values)).reshape(train_num)
+        X_train[:,2*len(feature)+i] = np.power(X_train[:,len(feature)+i],3)
+        #X_train = np.array(X_train.values)
+        X_test[:,2*len(feature)+i] = (np.array(pd.read_csv(test_data_path, sep=',',usecols=[feature[i]], header=0).values)).reshape(test_num)
+        X_test[:,2*len(feature)+i] = np.power(X_test[:,len(feature)+i],3)
+        #X_test = np.array(X_test.values)
+        '''
+    Y_train = pd.read_csv(train_label_path, sep=',', header=0)
+    Y_train = np.array(Y_train.values)
+    
+    return (X_train, Y_train, X_test)
+
 
 def _shuffle(X, Y):
     randomize = np.arange(len(X))
@@ -31,8 +65,8 @@ def normalize(X_all, X_test):
     sigma = np.std(X_train_test, axis=0)
     mu = np.tile(mu, (X_train_test.shape[0], 1))
     sigma = np.tile(sigma, (X_train_test.shape[0], 1))
-    X_train_test_normed = (X_train_test - mu) / sigma
-
+    #X_train_test_normed = (X_train_test - mu) / sigma
+    X_train_test_normed = (X_train_test ) / sigma
     # Split to train, test again
     X_all = X_train_test_normed[0:X_all.shape[0]]
     X_test = X_train_test_normed[X_all.shape[0]:]
@@ -70,10 +104,11 @@ def train(X_all, Y_all):
     X_train, Y_train, X_valid, Y_valid = split_valid_set(X_all, Y_all, valid_set_percentage)
 
     # Initiallize parameter, hyperparameter
-    w = np.zeros((106,))
+    feature = ['age', 'fnlwgt','sex', 'capital_gain', 'capital_loss', ' Federal-gov', ' Local-gov', ' Never-worked', ' Private', ' Self-emp-inc', ' Self-emp-not-inc', ' State-gov', ' Without-pay', '?_workclass', ' 10th', ' 11th', ' 12th', ' 1st-4th', ' 5th-6th', ' 7th-8th', ' 9th', ' Assoc-acdm', ' Assoc-voc', ' Bachelors', ' Doctorate', ' HS-grad', ' Masters', ' Preschool', ' Prof-school', ' Some-college', ' Adm-clerical', ' Armed-Forces', ' Craft-repair', ' Exec-managerial', ' Farming-fishing', ' Handlers-cleaners', ' Machine-op-inspct', ' Other-service', ' Priv-house-serv', ' Prof-specialty', ' Protective-serv', ' Sales', ' Tech-support', ' Transport-moving', '?_occupation', ' Husband', ' Not-in-family', ' Other-relative', ' Own-child', ' Unmarried', ' Wife', ' Amer-Indian-Eskimo', ' Asian-Pac-Islander', ' Black', ' Other', ' White']
+    w = np.zeros((len(feature)*2,))
     b = np.zeros((1,))
-    l_rate = 0.1
-    batch_size = 10 #32
+    l_rate = 0.0001
+    batch_size = 32 #32
     train_data_size = len(X_train)
     step_num = int(floor(train_data_size / batch_size))
     epoch_num = 1000
@@ -143,20 +178,23 @@ def infer(X_test, save_dir, output_dir):
 
 
 # Load feature and label
-X_all, Y_all, X_test = load_data(sys.argv[3], sys.argv[4], sys.argv[5])
+#X_all, Y_all, X_test = load_data(sys.argv[3], sys.argv[4], sys.argv[5])
+X_all, Y_all, X_test = load_feature(sys.argv[3], sys.argv[4], sys.argv[5])
 #X_all, Y_all, X_test = load_data('X_train', 'Y_train', 'X_test')
+#X_all, Y_all, X_test = load_feature('X_train', 'Y_train', 'X_test')
 # Normalization
 X_all, X_test = normalize(X_all, X_test)
 
-'''
+
 w,b =train(X_all, Y_all)
 x = X_test.T
 a=np.dot(w,x)+b
 y = sigmoid(a)
 y_ = np.around(y)
 '''
+'''
 y_ = 0
-tree_num = 100
+tree_num = 20
 for i in range(tree_num):
     w,b = train(X_all, Y_all)
     x = X_test.T
@@ -165,10 +203,11 @@ for i in range(tree_num):
     y_QQ = np.around(y)
     y_ = y_ + y_QQ
 y_ = np.around(y_/tree_num)
-
-
+'''
+'''
 # output
 file = open(sys.argv[6],'w')
+#file = open("logi_test.csv",'w')
 csv.writer(file).writerow(['id','label'])   
 for i in range(len(y_)):
     csv.writer(file).writerow([str(i+1),str(int(y_[i]))])
