@@ -129,7 +129,7 @@ train_Y = np.asarray(train_Y)
 # training model
 
 earlystop = EarlyStopping(monitor='valid_acc', min_delta=0.0, patience=6, verbose=0, mode='auto')
-model.fit(train_X,train_Y, nb_epoch=50,batch_size=128,validation_split=0.05,shuffle=True,callbacks=[earlystop])#35,50
+model.fit(train_X,train_Y, nb_epoch=5,batch_size=128,validation_split=0.05,shuffle=True,callbacks=[earlystop])#35,50
 
 #loss_and_metrics = model.evaluate(X_train, Y_train, batch_size=20)validation_split=0.10,shuffle=True
 #classed = model.predict_classes(X_train, batch_size=20)
