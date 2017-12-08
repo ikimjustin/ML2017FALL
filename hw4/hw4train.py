@@ -115,8 +115,7 @@ def main():
     print ('Loading data...')
     if args.action == 'train':
         dm.add_data('train_data', train_path, True)
-    elif args.action == 'semi':
-        dm.add_data('train_data', train_path, True)
+        #dm.add_data('train_data', train_path, True)
         dm.add_data('semi_data', semi_path, False)
         #dm.add_test('semi_data', semi_path, False)
     else:
@@ -186,6 +185,28 @@ def main():
                                      save_weights_only=True,
                                      monitor='val_acc',
                                      mode='max' )
+            # semi-supervised training
+        # repeat 10 times
+        for i in range(10):
+            ##^^def=10
+            # label the semi-data
+            semi_pred = model.predict(semi_all_X, batch_size=512, verbose=True)#1024
+            semi_X, semi_Y = dm.get_semi_data('semi_data', semi_pred, args.threshold, args.loss_function)
+            semi_X = np.concatenate((semi_X, X))
+            semi_Y = np.concatenate((semi_Y, Y))
+            print ('-- iteration %d  semi_data size: %d' %(i+1,len(semi_X)))
+            # train
+            history = model.fit(semi_X, semi_Y, 
+                                validation_data=(X_val, Y_val),
+                                epochs=3, 
+                                batch_size=args.batch_size,
+                                callbacks=[checkpoint, earlystopping] )
+
+            if os.path.exists(save_path):
+                print ('load model from %s' % save_path)
+                model.load_weights(save_path)
+            else:
+                raise ValueError("Can't find the file %s" %path)
  # testing
     elif args.action == 'test' :
         #raise Exception ('Implement your testing function')
