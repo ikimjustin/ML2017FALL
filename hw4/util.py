@@ -30,6 +30,7 @@ class DataManager:
 			self.data[name] = [X,Y]
 		else:
 			self.data[name] = [X]
+			
 	def add_test(self,name, data_path, with_label=True):
 		print ('read data from %s...'%data_path)
 		X, Y = [], []
@@ -45,7 +46,10 @@ class DataManager:
     #  vocab_size : maximum number of word in yout dictionary
 	def tokenize(self, vocab_size):
 		print ('create new tokenizer')
-		self.tokenizer = Tokenizer(num_words=vocab_size)
+		self.tokenizer = Tokenizer(num_words=vocab_size,filters='!"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n',
+                                   lower=True,
+                                   split=" ",
+                                   char_level=False)
 		for key in self.data:
 			print ('tokenizing %s'%key)
 			texts = self.data[key][0]
