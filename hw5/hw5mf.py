@@ -29,19 +29,6 @@ dimension = 480 #240
 keras.backend.tensorflow_backend.set_session(tensorflow.Session(config=tensorflow.ConfigProto(gpu_options=tensorflow.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction))))
 
 
-# load training data
-input_data = pd.read_csv("train.csv", sep = ',', encoding='utf-8', usecols=['UserID', 'MovieID', 'Rating'])
-max_user = input_data['UserID'].drop_duplicates().max()
-max_movie = input_data['MovieID'].drop_duplicates().max()
-input_data = input_data.sample(frac = 1., random_state = 168464)
-users = input_data['UserID'].values - 1
-movies = input_data['MovieID'].values - 1
-ratings = input_data['Rating'].values
-
-a=np.mean(ratings)
-b=np.std(ratings)
-
-ratings=(ratings-a)/b
 
 #MF
 
@@ -85,14 +72,31 @@ def dnnmodel(users, items, factors, dropout_rate):
 	model.compile(loss = 'mse', optimizer = 'adamax')
 	return model
 			  
-#model = dnnmodel(max_user, max_movie, dimension, dropout_rate)
-model = mfmodel(max_user, max_movie)
 
-model.summary()
 
 
 # training
 if sys.argv[1] == "train":
+	# load training data
+	input_data = pd.read_csv("train.csv", sep = ',', encoding='utf-8', usecols=['UserID', 'MovieID', 'Rating'])
+	max_user = input_data['UserID'].drop_duplicates().max()
+	max_movie = input_data['MovieID'].drop_duplicates().max()
+	input_data = input_data.sample(frac = 1., random_state = 168464)
+	users = input_data['UserID'].values - 1
+	movies = input_data['MovieID'].values - 1
+	ratings = input_data['Rating'].values
+
+	a=np.mean(ratings)
+	b=np.std(ratings)
+	print(max_user)
+	print(max_movie)
+
+	ratings=(ratings-a)/b
+	#model = dnnmodel(max_user, max_movie, dimension, dropout_rate)
+	model = mfmodel(max_user, max_movie)
+
+	model.summary()
+
 	print('start training')	
 	earlystopping = EarlyStopping('val_loss', patience = 3, verbose = 1)
 	checkpoint = ModelCheckpoint("best_model", verbose = 1 ,save_best_only = True, monitor = 'val_loss')
@@ -104,13 +108,27 @@ if sys.argv[1] == "test":
 	# load testing data
 	print('start to test data')
 	input_data = pd.read_csv(sys.argv[2], sep = ',', encoding='utf-8', usecols=['UserID', 'MovieID'])
+	
+	
+	max_user = input_data['UserID'].drop_duplicates().max()
+	max_movie = input_data['MovieID'].drop_duplicates().max()
+	#input_data = input_data.sample(frac = 1., random_state = 168464)
 	users = input_data['UserID'].values - 1
 	movies = input_data['MovieID'].values - 1
+	print(max_user)
+	print(max_movie)
+
+
+
+	#model = dnnmodel(max_user, max_movie, dimension, dropout_rate)
+	model = mfmodel(max_user, max_movie)
 	
 	model.load_weights('best_model')	
 	output = model.predict([users, movies])
 	file=open(sys.argv[3],'w')
 	csv.writer(file).writerow(['TestDataID', 'Rating'])
+	a=3.58171208604
+	b=1.11689766115
 
 	for i, j in enumerate(output):
 		csv.writer(file).writerow([str(i+1), str((j[0]*b)+a)])
