@@ -62,7 +62,7 @@ if sys.argv[1] == "train":
 	encoded_imgs = encoder.predict(X)
 	encoded_imgs = encoded_imgs.reshape(encoded_imgs.shape[0], -1)
 	kmeans = KMeans(n_clusters=2, random_state=0).fit(encoded_imgs).labels_
-	with open('mypickle', 'wb') as f:
+	with open('model', 'wb') as f:
 		pickle.dump(kmeans, f)
 '''
 
@@ -72,7 +72,7 @@ if sys.argv[1] == "train":
 import pandas as pd
 f = pd.read_csv(sys.argv[2])
 IDs, idx1, idx2 = np.array(f['ID']), np.array(f['image1_index']), np.array(f['image2_index'])
-with open('mypickle', 'rb') as f:
+with open('model', 'rb') as f:
 	cluster = pickle.load(f)
 # predict
 o = open(sys.argv[3], 'w')
