@@ -61,7 +61,7 @@ for i in range(i,i+1,1):
 	file_name = "reconstruction.jpg"
 	#file_name = "test"+str(img_number)+".png"
 	io.imsave(file_name, new_img)
-	print (weight)
+	#print (weight)
 #plot mean1st	
 #io.imsave("img_mean.png",img_mean.reshape(120,120,3))
 
